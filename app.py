@@ -2,75 +2,86 @@ import streamlit as st
 import io
 from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
-from reportlab.lib.colors import red, black # Para pruebas
+from reportlab.lib.units import inch
 from num2words import num2words
 
 st.set_page_config(page_title="Foliador UIE", layout="centered")
 
-st.title("📄 Foliador de Expedientes")
-st.write("Esta es la nueva versión del Foliador")
+st.title("📄 Foliador UIE")
+st.write("Configura cuándo y cómo empieza la numeración en el panel de la izquierda.")
 
-# Panel lateral
+# --- PANEL LATERAL (CONFIGURACIÓN) ---
 with st.sidebar:
-    st.header("Configuración")
-    numero_inicial = st.number_input("Número de inicio", value=1, min_value=0)
-    font_size = st.slider("Tamaño de letra", 8, 30, 14)
-    margen_puntos = st.slider("Distancia desde el borde superior", 10, 100, 30)
+    st.header("1. Configuración de Números")
+    # El número que se escribirá físicamente (ej: 5. Cinco)
+    numero_a_escribir = st.number_input("¿Con qué número empezar?", value=1, min_value=0)
     
-archivo_subido = st.file_uploader("Sube tu PDF aquí", type="pdf")
+    # La página del documento donde aparece el primer número
+    pagina_donde_empieza = st.number_input("¿En qué página del PDF empezar a mostrar números?", value=1, min_value=1)
+
+    st.header("2. Diseño")
+    font_size = st.slider("Tamaño de letra", 8, 24, 12)
+    margen_superior = st.slider("Margen superior (pulgadas)", 0.1, 2.0, 0.5)
+
+archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
 
 if archivo_subido:
-    if st.button("🔢 Generar Numeración"):
+    if st.button("🚀 Procesar PDF"):
         try:
-            with st.spinner("Procesando..."):
+            with st.spinner("Generando numeración..."):
                 reader = PdfReader(archivo_subido)
                 writer = PdfWriter()
                 
-                # Procesar cada página individualmente
+                # Procesamos cada página del PDF original
                 for i in range(len(reader.pages)):
                     page = reader.pages[i]
                     
-                    # --- DETECTAR TAMAÑO REAL DE LA PÁGINA ---
-                    # Esto lee el tamaño interno del PDF (en puntos)
+                    # Detectar tamaño real de la página
                     width = float(page.mediabox.width)
                     height = float(page.mediabox.height)
                     
-                    # Crear overlay para ESTA página específica
+                    # Creamos la capa transparente (overlay)
                     packet = io.BytesIO()
                     can = canvas.Canvas(packet, pagesize=(width, height))
                     
-                    # Lógica de texto
-                    current_num = numero_inicial + i
-                    word = num2words(current_num, lang='es').capitalize()
-                    text = f"{current_num}. {word}"
+                    # --- LÓGICA DE ACTIVACIÓN ---
+                    # i es el índice (empieza en 0), por eso usamos i + 1 para "página humana"
+                    numero_pagina_actual = i + 1
                     
-                    # Configurar Fuente y Color
-                    can.setFont("Courier-Bold", font_size)
-                    can.setFillColor(black)
+                    if numero_pagina_actual >= pagina_donde_empieza:
+                        # Calculamos el número que corresponde escribir
+                        # Es el número inicial + la diferencia de páginas procesadas
+                        conteo_actual = numero_a_escribir + (numero_pagina_actual - pagina_donde_empieza)
+                        
+                        word = num2words(conteo_actual, lang='es').capitalize()
+                        text = f"{conteo_actual}. {word}"
+                        
+                        can.setFont("Courier-Bold", font_size)
+                        # Dibujamos en el centro superior
+                        can.drawCentredString(width / 2, height - (margen_superior * inch), text)
                     
-                    # Dibujar en el centro superior relativo a la página
-                    can.drawCentredString(width / 2, height - margen_puntos, text)
                     can.showPage()
                     can.save()
                     
                     packet.seek(0)
-                    overlay_page = PdfReader(packet).pages[0]
+                    overlay_reader = PdfReader(packet)
+                    overlay_page = overlay_reader.pages[0]
                     
-                    # Fusionar: El overlay se pone ENCIMA de la página original
+                    # Fusionamos la capa de texto con la página original
                     page.merge_page(overlay_page)
                     writer.add_page(page)
                 
-                # Preparar descarga
+                # Preparar el archivo final para descarga
                 output = io.BytesIO()
                 writer.write(output)
                 output.seek(0)
                 
-                st.success("¡Numeración completada!")
+                st.success("✅ ¡PDF procesado!")
                 st.download_button(
-                    label="📥 Descargar PDF",
+                    label="📥 Descargar PDF Numerado",
                     data=output,
-                    file_name="archivo_numerado.pdf",
+                    file_name="pdf_numerado.pdf",
                     mime="application/pdf"
                 )
         except Exception as e:
-            st.error(f"Ocurrió un error técnico: {e}")
+            st.error(f"Hubo un error: {e}")
