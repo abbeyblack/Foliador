@@ -5,10 +5,10 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.colors import red, black # Para pruebas
 from num2words import num2words
 
-st.set_page_config(page_title="Numerador Inteligente", layout="centered")
+st.set_page_config(page_title="Foliador UIE", layout="centered")
 
-st.title("📄 Numerador de PDFs Pro")
-st.write("Esta versión detecta automáticamente el tamaño de tus hojas.")
+st.title("📄 Foliador de Expedientes")
+st.write("Esta es la nueva versión del Foliador")
 
 # Panel lateral
 with st.sidebar:
@@ -16,8 +16,7 @@ with st.sidebar:
     numero_inicial = st.number_input("Número de inicio", value=1, min_value=0)
     font_size = st.slider("Tamaño de letra", 8, 30, 14)
     margen_puntos = st.slider("Distancia desde el borde superior", 10, 100, 30)
-    color_texto = st.selectbox("Color del número", ["Negro", "Rojo"])
-
+    
 archivo_subido = st.file_uploader("Sube tu PDF aquí", type="pdf")
 
 if archivo_subido:
@@ -47,10 +46,7 @@ if archivo_subido:
                     
                     # Configurar Fuente y Color
                     can.setFont("Courier-Bold", font_size)
-                    if color_texto == "Rojo":
-                        can.setFillColor(red)
-                    else:
-                        can.setFillColor(black)
+                    can.setFillColor(black)
                     
                     # Dibujar en el centro superior relativo a la página
                     can.drawCentredString(width / 2, height - margen_puntos, text)
@@ -71,7 +67,7 @@ if archivo_subido:
                 
                 st.success("¡Numeración completada!")
                 st.download_button(
-                    label="📥 Descargar PDF Numerado",
+                    label="📥 Descargar PDF",
                     data=output,
                     file_name="archivo_numerado.pdf",
                     mime="application/pdf"
