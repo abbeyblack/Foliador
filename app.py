@@ -6,9 +6,9 @@ from reportlab.lib.units import inch
 from num2words import num2words
 
 # Configuración básica de la página
-st.set_page_config(page_title="Numerador Automático", layout="centered")
+st.set_page_config(page_title="Foliador UIE", layout="centered")
 
-st.title("📄 Numerador de PDFs (Oficio)")
+st.title("📄 Foliador")
 st.write("Configura el inicio de la numeración y sube tu archivo.")
 
 # --- VALORES PREDETERMINADOS (FIJOS) ---
