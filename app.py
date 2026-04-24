@@ -15,16 +15,49 @@ st.write("Configura el inicio de la numeración y sube tu archivo.")
 FONT_SIZE = 12
 MARGEN_SUPERIOR = 0.5
 
-# --- PANEL LATERAL (CONFIGURACIÓN SIMPLIFICADA) ---
+# --- PANEL LATERAL (CONFIGURACIÓN + FAQ) ---
 with st.sidebar:
-    st.header("Configuración")
-    # El número que se escribirá físicamente
+    st.header("⚙️ Configuración")
     numero_a_escribir = st.number_input("¿Con qué número empezar?", value=1, min_value=0)
-    
-    # La página del documento donde aparece el primer número
     pagina_donde_empieza = st.number_input("¿En qué página del PDF empezar?", value=1, min_value=1)
+    
+    st.divider() # Línea divisoria
 
-archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
+    # --- SECCIÓN DE FAQ ---
+    st.subheader("❓ Preguntas Frecuentes")
+    
+    with st.expander("¿Qué hace esta app?"):
+        st.write("""
+            Esta herramienta agrega números de página en formato **'1. Uno'** centrados en la parte superior. Está optimizada para hojas tamaño 
+            **Oficio (8.3\" x 13\")**.
+        """)
+
+    with st.expander("¿Puedo saltarme la portada?"):
+        st.write("""
+            ¡Sí! En la casilla **'¿En qué página del PDF empezar?'**, pon el 
+            número de página donde quieres que aparezca el primer número. 
+            Las páginas anteriores quedarán en blanco.
+        """)
+
+    with st.expander("¿Qué pasa si mi PDF no es Oficio?"):
+        st.write("""
+            La app detecta el tamaño de cada página automáticamente. Si tu PDF es 
+            Carta o A4, el número se centrará igual, pero el margen de 0.5\" 
+            se calculará según el tamaño de esa hoja.
+        """)
+
+    with st.expander("¿Mis archivos están seguros?"):
+        st.write("""
+            Sí. Los archivos se procesan en la memoria del servidor y se borran 
+            automáticamente al cerrar la sesión. No se guardan de forma permanente.
+        """)
+
+    with st.expander("No veo los números, ¿qué hago?"):
+        st.write("""
+            Si el PDF es un escaneo muy oscuro o tiene márgenes físicos muy grandes, 
+            el número podría quedar oculto. Asegúrate de que el PDF original 
+            tenga espacio libre en el borde superior.
+        """)
 
 if archivo_subido:
     if st.button("🚀 Generar Numeración"):
