@@ -2,61 +2,79 @@ import streamlit as st
 import io
 from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
+from reportlab.lib.colors import red, black # Para pruebas
 from num2words import num2words
 
-# Configuración de la página
-st.set_page_config(page_title="Numerador de Oficio", page_icon="📄")
-st.title("📄 Numerador de PDFs (Formato Oficio)")
+st.set_page_config(page_title="Numerador Inteligente", layout="centered")
 
-# Barra lateral con opciones
-st.sidebar.header("Configuración")
-archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
-numero_inicial = st.sidebar.number_input("Número de inicio", value=1, min_value=0)
-tamaño_fuente = st.sidebar.slider("Tamaño de letra", 8, 20, 12)
-margen_superior = st.sidebar.slider("Margen superior (pulgadas)", 0.1, 2.0, 0.5)
+st.title("📄 Numerador de PDFs Pro")
+st.write("Esta versión detecta automáticamente el tamaño de tus hojas.")
 
-def generar_pdf(input_pdf, start_num, font_size, margin_top):
-    reader = PdfReader(input_pdf)
-    writer = PdfWriter()
-    
-    # Medidas Oficio 8.3 x 13
-    width = 8.3 * inch
-    height = 13.0 * inch
-    
-    packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=(width, height))
-    
-    for i in range(len(reader.pages)):
-        current_num = start_num + i
-        word = num2words(current_num, lang='es').capitalize()
-        text = f"{current_num}. {word}"
-        
-        can.setFont("Courier-Bold", font_size)
-        can.drawCentredString(width / 2, height - (margin_top * inch), text)
-        can.showPage()
-        
-    can.save()
-    packet.seek(0)
-    overlay = PdfReader(packet)
+# Panel lateral
+with st.sidebar:
+    st.header("Configuración")
+    numero_inicial = st.number_input("Número de inicio", value=1, min_value=0)
+    font_size = st.slider("Tamaño de letra", 8, 30, 14)
+    margen_puntos = st.slider("Distancia desde el borde superior", 10, 100, 30)
+    color_texto = st.selectbox("Color del número", ["Negro", "Rojo"])
 
-    for i in range(len(reader.pages)):
-        page = reader.pages[i]
-        page.merge_page(overlay.pages[i])
-        writer.add_page(page)
-    
-    output = io.BytesIO()
-    writer.write(output)
-    return output.getvalue()
+archivo_subido = st.file_uploader("Sube tu PDF aquí", type="pdf")
 
-if archivo_subido is not None:
-    if st.button("🔢 Numerar PDF"):
-        with st.spinner("Procesando..."):
-            resultado = generar_pdf(archivo_subido, numero_inicial, tamaño_fuente, margen_superior)
-            st.success("¡PDF procesado con éxito!")
-            st.download_button(
-                label="📥 Descargar PDF Numerado",
-                data=resultado,
-                file_name="pdf_numerado.pdf",
-                mime="application/pdf"
-            )
+if archivo_subido:
+    if st.button("🔢 Generar Numeración"):
+        try:
+            with st.spinner("Procesando..."):
+                reader = PdfReader(archivo_subido)
+                writer = PdfWriter()
+                
+                # Procesar cada página individualmente
+                for i in range(len(reader.pages)):
+                    page = reader.pages[i]
+                    
+                    # --- DETECTAR TAMAÑO REAL DE LA PÁGINA ---
+                    # Esto lee el tamaño interno del PDF (en puntos)
+                    width = float(page.mediabox.width)
+                    height = float(page.mediabox.height)
+                    
+                    # Crear overlay para ESTA página específica
+                    packet = io.BytesIO()
+                    can = canvas.Canvas(packet, pagesize=(width, height))
+                    
+                    # Lógica de texto
+                    current_num = numero_inicial + i
+                    word = num2words(current_num, lang='es').capitalize()
+                    text = f"{current_num}. {word}"
+                    
+                    # Configurar Fuente y Color
+                    can.setFont("Courier-Bold", font_size)
+                    if color_texto == "Rojo":
+                        can.setFillColor(red)
+                    else:
+                        can.setFillColor(black)
+                    
+                    # Dibujar en el centro superior relativo a la página
+                    can.drawCentredString(width / 2, height - margen_puntos, text)
+                    can.showPage()
+                    can.save()
+                    
+                    packet.seek(0)
+                    overlay_page = PdfReader(packet).pages[0]
+                    
+                    # Fusionar: El overlay se pone ENCIMA de la página original
+                    page.merge_page(overlay_page)
+                    writer.add_page(page)
+                
+                # Preparar descarga
+                output = io.BytesIO()
+                writer.write(output)
+                output.seek(0)
+                
+                st.success("¡Numeración completada!")
+                st.download_button(
+                    label="📥 Descargar PDF Numerado",
+                    data=output,
+                    file_name="archivo_numerado.pdf",
+                    mime="application/pdf"
+                )
+        except Exception as e:
+            st.error(f"Ocurrió un error técnico: {e}")
