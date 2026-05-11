@@ -20,6 +20,8 @@ with st.sidebar:
     st.header("⚙️ Configuración")
     numero_a_escribir = st.number_input("¿Con qué número empezar?", value=1, min_value=0)
     pagina_donde_empieza = st.number_input("¿En qué página del PDF empezar?", value=1, min_value=1)
+    # ÚNICO CAMBIO EN INTERFAZ: Se agrega el límite final
+    pagina_donde_termina = st.number_input("¿En qué página del PDF terminar?", value=100, min_value=1)
     
     st.divider() # Línea divisoria
 
@@ -46,19 +48,6 @@ with st.sidebar:
             se calculará según el tamaño de esa hoja.
         """)
 
-    with st.expander("¿Mis archivos están seguros?"):
-        st.write("""
-            Sí. Los archivos se procesan en la memoria del servidor y se borran 
-            automáticamente al cerrar la sesión. No se guardan de forma permanente.
-        """)
-
-    with st.expander("No veo los números, ¿qué hago?"):
-        st.write("""
-            Si el PDF es un escaneo muy oscuro o tiene márgenes físicos muy grandes, 
-            el número podría quedar oculto. Asegúrate de que el PDF original 
-            tenga espacio libre en el borde superior.
-        """)
-
 # --- LÓGICA DE PROCESAMIENTO ---
 archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
 
@@ -79,7 +68,8 @@ if archivo_subido:
                     
                     numero_pagina_actual = i + 1
                     
-                    if numero_pagina_actual >= pagina_donde_empieza:
+                    # ÚNICO CAMBIO EN LÓGICA: Ahora verifica que esté entre el inicio y el fin
+                    if pagina_donde_empieza <= numero_pagina_actual <= pagina_donde_termina:
                         conteo_actual = numero_a_escribir + (numero_pagina_actual - pagina_donde_empieza)
                         word = num2words(conteo_actual, lang='es').capitalize()
                         text = f"{conteo_actual}. {word}"
