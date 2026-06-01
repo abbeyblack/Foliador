@@ -20,8 +20,8 @@ with st.sidebar:
     st.header("⚙️ Configuración")
     numero_a_escribir = st.number_input("¿Con qué número empezar?", value=1, min_value=0)
     pagina_donde_empieza = st.number_input("¿En qué página del PDF empezar?", value=1, min_value=1)
-    # ÚNICO CAMBIO EN INTERFAZ: Se agrega el límite final
-    pagina_donde_termina = st.number_input("¿En qué página del PDF terminar?", value=100, min_value=1)
+    # 0 significa "hasta el final del documento"
+    pagina_donde_termina = st.number_input("¿En qué página del PDF terminar? (0 = todas)", value=0, min_value=0)
     
     st.divider() # Línea divisoria
 
@@ -48,6 +48,13 @@ with st.sidebar:
             se calculará según el tamaño de esa hoja.
         """)
 
+    with st.expander("¿Qué significa '0' en página de término?"):
+        st.write("""
+            Cuando el valor es **0**, la app enumera **todas las páginas** 
+            desde la página de inicio hasta el final del documento, 
+            sin importar cuántas tenga.
+        """)
+
 # --- LÓGICA DE PROCESAMIENTO ---
 archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
 
@@ -57,8 +64,12 @@ if archivo_subido:
             with st.spinner("Procesando..."):
                 reader = PdfReader(archivo_subido)
                 writer = PdfWriter()
+
+                # Si pagina_donde_termina es 0, se usa el total de páginas del PDF
+                total_paginas = len(reader.pages)
+                limite_final = total_paginas if pagina_donde_termina == 0 else pagina_donde_termina
                 
-                for i in range(len(reader.pages)):
+                for i in range(total_paginas):
                     page = reader.pages[i]
                     width = float(page.mediabox.width)
                     height = float(page.mediabox.height)
@@ -68,8 +79,7 @@ if archivo_subido:
                     
                     numero_pagina_actual = i + 1
                     
-                    # ÚNICO CAMBIO EN LÓGICA: Ahora verifica que esté entre el inicio y el fin
-                    if pagina_donde_empieza <= numero_pagina_actual <= pagina_donde_termina:
+                    if pagina_donde_empieza <= numero_pagina_actual <= limite_final:
                         conteo_actual = numero_a_escribir + (numero_pagina_actual - pagina_donde_empieza)
                         word = num2words(conteo_actual, lang='es').capitalize()
                         text = f"{conteo_actual}. {word}"
