@@ -66,43 +66,39 @@ with st.sidebar:
 
     st.divider()  # Línea divisoria
 
-    # --- SECCIÓN DE FAQ ---
-    # Fíjate que ahora esta sección tiene un espacio (indentación) hacia la derecha
-    st.subheader("❓ Preguntas Frecuentes")
+# --- SECCIÓN DE FAQ ---
+st.subheader("❓ Preguntas Frecuentes")
 
-    with st.expander("¿Qué hace esta app?"):
-        st.write("""
-            Esta herramienta agrega números de página en formato **'1. Uno'** centrados en la parte superior. Está optimizada para hojas tamaño 
-            **Oficio (8.3" x 13")**. Conserva los marcadores (bookmarks) del archivo original.
-        """)
+with st.expander("¿Qué hace esta app?"):
+    st.write("""
+        Esta herramienta agrega números de página en formato **'1. Uno'** centrados en la parte superior. Está optimizada para hojas tamaño 
+        **Oficio (8.3" x 13")**. Conserva los marcadores (bookmarks) del archivo original.
+    """)
 
-    with st.expander("¿Cómo numero un expediente nuevo o sin folios previos?"):
-        st.write("""
-            Si tu documento no tiene ninguna página numerada y quieres foliarlo por completo, usa esta configuración:
-            * **Número inicial a imprimir:** `1`
-            * **Desde la página:** `1`
-            * **Hasta la página:** `0` (esto aplicará la numeración hasta la última página).
-        """)
+with st.expander("¿Cómo numero un expediente nuevo o sin folios previos?"):
+    st.write("""
+        Si tu documento no tiene ninguna página numerada y quieres foliarlo por completo, usa esta configuración:
+        * **Número inicial a imprimir:** `1`
+        * **Desde la página:** `1`
+        * **Hasta la página:** `0` (esto aplicará la numeración hasta la última página).
+    """)
 
-    with st.expander("Mi expediente ya tiene folios y agregué hojas al final, ¿cómo continúo?"):
-        st.write("""
-            Para retomar la numeración justo donde la dejaste, sin alterar las páginas que ya están foliadas:
-            * **Número inicial a imprimir:** El número siguiente al último folio que ya tienes (ej. si quedó en el 50, escribe `51`).
-            * **Desde la página:** El número de página física del PDF donde comienzan estas hojas nuevas.
-            * **Hasta la página:** `0` (para abarcar todas las hojas nuevas hasta el final).
-        """)
+with st.expander("Mi expediente ya tiene folios y agregué hojas al final, ¿cómo continúo?"):
+    st.write("""
+        Para retomar la numeración justo donde la dejaste, sin alterar las páginas que ya están foliadas:
+        * **Número inicial a imprimir:** El número siguiente al último folio que ya tienes (ej. si quedó en el 50, escribe `51`).
+        * **Desde la página:** El número de página física del PDF donde comienzan estas hojas nuevas.
+        * **Hasta la página:** `0` (para abarcar todas las hojas nuevas hasta el final).
+    """)
 
-    with st.expander("¿Qué hago si tengo hojas sin numerar en el medio del documento?"):
-        st.write("""
-            Si necesitas foliar solo un bloque específico en el centro de tu expediente, puedes aislar ese tramo indicando el rango exacto:
-            * **Número inicial a imprimir:** El folio que le corresponde a la primera página de ese bloque.
-            * **Desde la página:** El número de la página física del PDF donde inicia el bloque en blanco.
-            * **Hasta la página:** La página exacta donde termina ese bloque. *(Importante: Aquí no debes usar 0, sino el número real donde finaliza el tramo).*
-        """)
+with st.expander("¿Qué hago si tengo hojas sin numerar en el medio del documento?"):
+    st.write("""
+        Si necesitas foliar solo un bloque específico en el centro de tu expediente, puedes aislar ese tramo indicando el rango exacto:
+        * **Número inicial a imprimir:** El folio que le corresponde a la primera página de ese bloque.
+        * **Desde la página:** El número de la página física del PDF donde inicia el bloque en blanco.
+        * **Hasta la página:** La página exacta donde termina ese bloque. *(Importante: Aquí no debes usar 0, sino el número real donde finaliza el tramo).*
+    """)
 
-# --- LÓGICA DE PROCESAMIENTO ---
-# (El resto del código vuelve al margen izquierdo)
-archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
 # --- LÓGICA DE PROCESAMIENTO ---
 archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
 
