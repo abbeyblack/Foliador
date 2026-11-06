@@ -66,35 +66,38 @@ with st.sidebar:
 
     st.divider()  # Línea divisoria
 
-    # --- SECCIÓN DE FAQ ---
-    st.subheader("❓ Preguntas Frecuentes")
+# --- SECCIÓN DE FAQ ---
+st.subheader("❓ Preguntas Frecuentes")
 
-    with st.expander("¿Qué hace esta app?"):
-        st.write("""
-            Esta herramienta agrega números de página en formato **'1. Uno'** centrados en la parte superior. Está optimizada para hojas tamaño 
-            **Oficio (8.3\" x 13\")**. Conserva los marcadores (bookmarks) del archivo original.
-        """)
+with st.expander("¿Qué hace esta app?"):
+    st.write("""
+        Esta herramienta agrega números de página en formato **'1. Uno'** centrados en la parte superior. Está optimizada para hojas tamaño 
+        **Oficio (8.3" x 13")**. Conserva los marcadores (bookmarks) del archivo original.
+    """)
 
-    with st.expander("¿Puedo saltarme la portada?"):
-        st.write("""
-            ¡Sí! En la casilla **'¿En qué página del PDF empezar?'**, pon el 
-            número de página donde quieres que aparezca el primer número. 
-            Las páginas anteriores quedarán en blanco.
-        """)
+with st.expander("¿Cómo numero un expediente nuevo o sin folios previos?"):
+    st.write("""
+        Si tu documento no tiene ninguna página numerada y quieres foliarlo por completo, usa esta configuración:
+        * **Número inicial a imprimir:** `1`
+        * **Desde la página:** `1`
+        * **Hasta la página:** `0` (esto aplicará la numeración hasta la última página).
+    """)
 
-    with st.expander("¿Qué pasa si mi PDF no es Oficio?"):
-        st.write("""
-            La app detecta el tamaño de cada página automáticamente. Si tu PDF es 
-            Carta o A4, el número se centrará igual, pero el margen de 0.5\" 
-            se calculará según el tamaño de esa hoja.
-        """)
+with st.expander("Mi expediente ya tiene folios y agregué hojas al final, ¿cómo continúo?"):
+    st.write("""
+        Para retomar la numeración justo donde la dejaste, sin alterar las páginas que ya están foliadas:
+        * **Número inicial a imprimir:** El número siguiente al último folio que ya tienes (ej. si quedó en el 50, escribe `51`).
+        * **Desde la página:** El número de página física del PDF donde comienzan estas hojas nuevas.
+        * **Hasta la página:** `0` (para abarcar todas las hojas nuevas hasta el final).
+    """)
 
-    with st.expander("¿Qué significa '0' en página de término?"):
-        st.write("""
-            Cuando el valor es **0**, la app enumera **todas las páginas** 
-            desde la página de inicio hasta el final del documento, 
-            sin importar cuántas tenga.
-        """)
+with st.expander("¿Qué hago si tengo hojas sin numerar en el medio del documento?"):
+    st.write("""
+        Si necesitas foliar solo un bloque específico en el centro de tu expediente, puedes aislar ese tramo indicando el rango exacto:
+        * **Número inicial a imprimir:** El folio que le corresponde a la primera página de ese bloque.
+        * **Desde la página:** El número de la página física del PDF donde inicia el bloque en blanco.
+        * **Hasta la página:** La página exacta donde termina ese bloque. *(Importante: Aquí no debes usar 0, sino el número real donde finaliza el tramo).*
+    """)
 
 # --- LÓGICA DE PROCESAMIENTO ---
 archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
