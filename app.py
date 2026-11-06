@@ -9,7 +9,7 @@ from num2words import num2words
 st.set_page_config(page_title="Foliador UIE", layout="centered")
 
 st.title("📄 Foliador")
-st.write("Configura el inicio de la numeración y sube tu archivo.")
+st.write("Configura el inicio de la numeración y sube tu archivo. Si tienes dudas sobre cómo usar la App, revisa las Preguntas Frecuentes (FAQ) en el menú lateral.")
 
 # --- VALORES PREDETERMINADOS (FIJOS) ---
 FONT_SIZE = 12
