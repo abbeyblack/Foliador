@@ -16,40 +16,40 @@ FONT_SIZE = 12
 MARGEN_SUPERIOR = 0.5
 
 
-def crear_overlay(width, height, rotation, texto):
+def crear_overlay(left, bottom, width, height, rotation, texto):
     """
-    Crea una página PDF (en memoria) con el texto centrado en la parte
-    superior, tal como se ve la hoja una vez aplicada la rotación.
-    Devuelve la página del overlay.
+    Crea una página PDF (en memoria) con el texto centrado en el borde
+    superior VISUAL de la hoja, derecho y legible, sin importar si la
+    hoja tiene /Rotate de 0, 90, 180 o 270 grados.
     """
     packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=(width, height))
+    can = canvas.Canvas(packet, pagesize=(left + width, bottom + height))
     can.setFont("Courier-Bold", FONT_SIZE)
 
     margen = MARGEN_SUPERIOR * inch
 
-    if rotation == 0:
-        can.drawCentredString(width / 2, height - margen, texto)
-    elif rotation == 90:
-        can.saveState()
+    can.saveState()
+    # Se ajusta al origen real del mediabox (normalmente 0, 0)
+    can.translate(left, bottom)
+
+    if rotation == 90:
+        # El borde superior visual es el borde izquierdo de la hoja sin rotar
         can.translate(margen, height / 2)
-        can.rotate(-90)
-        can.drawCentredString(0, 0, texto)
-        can.restoreState()
+        can.rotate(90)
     elif rotation == 180:
-        can.saveState()
+        # El borde superior visual es el borde inferior de la hoja sin rotar
         can.translate(width / 2, margen)
         can.rotate(180)
-        can.drawCentredString(0, 0, texto)
-        can.restoreState()
     elif rotation == 270:
-        can.saveState()
+        # El borde superior visual es el borde derecho de la hoja sin rotar
         can.translate(width - margen, height / 2)
-        can.rotate(90)
-        can.drawCentredString(0, 0, texto)
-        can.restoreState()
+        can.rotate(-90)
     else:
-        can.drawCentredString(width / 2, height - margen, texto)
+        # Rotación 0: arriba, centrado
+        can.translate(width / 2, height - margen)
+
+    can.drawCentredString(0, 0, texto)
+    can.restoreState()
 
     can.save()
     packet.seek(0)
@@ -100,10 +100,10 @@ with st.sidebar:
         """)
 
 # --- LÓGICA DE PROCESAMIENTO ---
-archivo_subido = st.file_uploader("Sube tu archivo PDF", type="pdf")
+archivo_subido = st.file_uploader("Sube tu expediente", type="pdf")
 
 if archivo_subido:
-    if st.button("🚀 Generar PDF Numerado"):
+    if st.button("🚀 Generar expediente foliado"):
         try:
             with st.spinner("Procesando..."):
                 reader = PdfReader(archivo_subido)
@@ -127,11 +127,13 @@ if archivo_subido:
                         word = num2words(conteo_actual, lang='es').capitalize()
                         texto = f"{conteo_actual}. {word}"
 
+                        left = float(page.mediabox.left)
+                        bottom = float(page.mediabox.bottom)
                         width = float(page.mediabox.width)
                         height = float(page.mediabox.height)
                         rotation = int(page.get("/Rotate", 0) or 0) % 360
 
-                        overlay_page = crear_overlay(width, height, rotation, texto)
+                        overlay_page = crear_overlay(left, bottom, width, height, rotation, texto)
 
                         # La página ya pertenece al writer, así que se puede fusionar
                         page.merge_page(overlay_page)
@@ -140,11 +142,11 @@ if archivo_subido:
                 writer.write(output)
                 output.seek(0)
 
-                st.success("✅ ¡PDF listo!")
+                st.success("✅ ¡Expediente listo!")
                 st.download_button(
                     label="📥 Descargar ahora",
                     data=output,
-                    file_name="archivo_numerado.pdf",
+                    file_name="expediente_numerado.pdf",
                     mime="application/pdf"
                 )
         except Exception as e:
